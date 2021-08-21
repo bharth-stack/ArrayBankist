@@ -30,7 +30,7 @@ const account4 = {
   owner: "Sarah Smith",
   movements: [430, 1000, 700, 50, 90],
   interestRate: 1,
-  pin: 4444,
+  pin:4444,
 };
 
 const accounts = [account1, account2, account3, account4];
@@ -61,15 +61,19 @@ const inputLoanAmount = document.querySelector(".form__input--loan-amount");
 const inputCloseUsername = document.querySelector(".form__input--user");
 const inputClosePin = document.querySelector(".form__input--pin");
 
-const display = function (data) {
+const display = function (data,sort=false) {
   containerMovements.innerHTML = "";
-  data.forEach(function (mov, i) {
+  const movs=sort?data.slice().sort((a,b)=>{
+    return a-b;
+  }):data;
+  movs.forEach(function (mov, i) {
     const type = mov > 0 ? "deposit" : "withdrawal";
     const addData = `<div class="movements__row">
     <div class="movements__type movements__type--${type}">${i + 1} ${type}</div>
     <div class="movements__value">${mov}€</div>
   </div>`;
     containerMovements.insertAdjacentHTML("afterbegin", addData);
+   
   });
 };
 
@@ -106,7 +110,7 @@ const balance = data => {
   }, 0);
 
   labelBalance.textContent = `${data.balance}€`;
-  return data.balance;
+  // return data.balance;
 };
 const calcDisplaySummary = dataACC => {
   const incomes = dataACC.movements
@@ -142,13 +146,13 @@ const calcDisplaySummary = dataACC => {
 };
 const update=(acco)=>{
   display(acco.movements);
-  Withdrawls(acco.movements);
-  deposit(acco.movements);
+  // Withdrawls(acco.movements);
+  // deposit(acco.movements);
   calcDisplaySummary(acco);
   balance(acco);
-
 }
 let acco;
+
 btnLogin.addEventListener('click', (e)=>{
   e.preventDefault();
   acco=accounts.find((data)=>{
@@ -168,7 +172,7 @@ btnTransfer.addEventListener('click',(e)=>{
   const transfer=accounts.find((data)=>{
    return data.userName===inputTransferTo.value
   });
-  if(amount>0 && transfer&&acco.balance>=amount&&transfer.userName!==acco.userName){
+  if(amount>0 &&transfer&&acco.balance>=amount&&transfer.userName!==acco.userName){
     inputTransferAmount.value=inputTransferTo.value="";
    acco.movements.push(-amount);
    transfer.movements.push(amount);
@@ -176,11 +180,56 @@ btnTransfer.addEventListener('click',(e)=>{
   }
 })
 
+btnClose.addEventListener('click',(e)=>{
+  e.preventDefault();
+  const close=inputCloseUsername.value;
+  const closePin=Number(inputClosePin.value);
+console.log(acco);
+  if(close===acco.userName &&  acco.pin===closePin){
+    const deletes =accounts.findIndex((data)=>{
+         return data.userName===close;
+    })
+    
+    containerApp.style.opacity=0;
+    accounts.splice(deletes,1);
+  }
+  inputCloseUsername.value=inputClosePin.value="";
+})
+btnLoan.addEventListener('click',(e)=>{
+e.preventDefault();
+const amount=Number(inputLoanAmount.value)
+if(amount >0&& acco.movements.some((data)=>{
+return data>=amount/10;
+}
+)){
+ acco.movements.push(amount);
+ update(acco);
+ inputLoanAmount.value="";
+};
 
+}); 
+const totalMov=accounts.map((data)=>{
+  return data.movements;
+});
+console.log(totalMov.flat(1).reduce((acc,data)=>{
+  return acc+data;
+},0));
+console.log(totalMov);
+let change=false;
+btnSort.addEventListener('click',(e)=>{
+e.preventDefault();
 
+display(acco.movements,!change);
+change=!change;
 
+})
 
-
+// const arr=[[1,2,3],[4,5,6,7],8,9];
+// console.log(...arr[0],...arr[1],arr[2],arr[3]);
+// console.log(arr.flat(1));
+// const arr2=[[1,2,[3,4]],[5,[6,7],8],9,0];
+// console.log(arr2.flat(1));
+// console.log(arr2.flat(2));
 
 // for(const data of accounts){
 //   if(data.owner==="Jessica Davis"){
